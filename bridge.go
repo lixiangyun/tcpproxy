@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net"
 	"sync"
@@ -18,18 +19,23 @@ func NewTcpBridge(localaddr string, remoteaddr string) *TcpBridge {
 
 func tcpBridgeLink(name string, localconn, remoteconn net.Conn) {
 
+	localremote := fmt.Sprintf("%s->%s",
+		localconn.RemoteAddr().String(),
+		remoteconn.RemoteAddr().String())
+
+	remotelocal := fmt.Sprintf("%s->%s",
+		remoteconn.RemoteAddr().String(),
+		localconn.RemoteAddr().String())
+
+	log.Println(name, "new connect. ", localremote)
+
 	syncSem := new(sync.WaitGroup)
-
-	log.Println("new "+name+" connect. ", localconn.RemoteAddr(), " <-> ", remoteconn.RemoteAddr())
-
 	syncSem.Add(2)
-
-	go tcpChannel(localconn, remoteconn, syncSem)
-	go tcpChannel(remoteconn, localconn, syncSem)
-
+	go tcpChannel(localremote, localconn, remoteconn, syncSem)
+	go tcpChannel(remotelocal, remoteconn, localconn, syncSem)
 	syncSem.Wait()
 
-	log.Println("close "+name+" connect. ", localconn.RemoteAddr(), " <-> ", remoteconn.RemoteAddr())
+	log.Println(name, "close connect. ", localremote)
 }
 
 // 桥接连接池模式

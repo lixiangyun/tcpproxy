@@ -16,6 +16,7 @@ var (
 	remoteaddr string
 	localaddr  string
 	help       bool
+	debug      bool
 )
 
 func usage() {
@@ -29,6 +30,7 @@ Options:
 
 func init() {
 	flag.BoolVar(&help, "h", false, "this help")
+	flag.BoolVar(&debug, "debug", false, "debug mode")
 
 	flag.StringVar(&mode, "m", "proxy", "using bridge/link/proxy mode.")
 	flag.UintVar(&pools, "pools", 10, "using connect num on link/bridge mode.")
