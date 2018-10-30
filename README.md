@@ -23,10 +23,8 @@ Options:
         connect to remote address.
 ```
 
-## example
-
+## binary deployment
 ### proxy mode
-
 ```
 tcpproxy.exe -m proxy -local 127.0.0.1:1000 -remote 10.10.0.1:2000
 ```
@@ -39,4 +37,20 @@ tcpproxy.exe -m bridge -local :1000 -remote :2000
 ### link mode
 ```
 tcpproxy.exe -m link -local 127.0.0.1:1000 -remote 10.10.0.1:2000
+```
+
+## Docker deployment
+### proxy mode
+```
+docker run --net=host -d --restart=always linimbus/tcpproxy -m proxy -local 127.0.0.1:1000 -remote 10.10.0.1:2000
+```
+
+### bridge mode
+```
+docker run --net=host -d --restart=always linimbus/tcpproxy -m bridge -local :1000 -remote :2000
+```
+
+### link mode
+```
+docker run --net=host -d --restart=always linimbus/tcpproxy -m link -local 127.0.0.1:1000 -remote 10.10.0.1:2000
 ```
