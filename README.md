@@ -1,6 +1,8 @@
 # tcpproxy
 - Tcp protocol proxy tool
 
+## ![](https://travis-ci.com/lixiangyun/tcpproxy.svg?branch=master)
+
 ## build
 ```
 go build .
