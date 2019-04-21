@@ -107,7 +107,7 @@ func (t *TcpProxy) Start() error {
 			if err != nil {
 				log.Println(err.Error())
 				times++
-				if times > len(t.RemoteAddr) {
+				if times >= len(t.RemoteAddr) {
 					times = 0
 				}
 				log.Printf("switch address to %s.\n", t.RemoteAddr[times])
@@ -167,7 +167,6 @@ func TcpProxyStart() {
 		if err != nil {
 			log.Fatalf("tcp proxy start failed %v.", v)
 		}
-
 	}
 
 }
