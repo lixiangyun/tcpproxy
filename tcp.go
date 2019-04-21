@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"fmt"
 	"log"
 	"net"
@@ -8,12 +9,14 @@ import (
 )
 
 type TcpProxy struct {
+	ListenTls  *tls.Config
 	ListenAddr string
-	RemoteAddr string
+	RemoteTls  *tls.Config
+	RemoteAddr []string
 }
 
-func NewTcpProxy(local string, remote string) *TcpProxy {
-	return &TcpProxy{ListenAddr: local, RemoteAddr: remote}
+func NewTcpProxy(local string, localtls *tls.Config, remote []string, remotetls *tls.Config) *TcpProxy {
+	return &TcpProxy{ListenTls: localtls, ListenAddr: local, RemoteTls: remotetls, RemoteAddr: remote}
 }
 
 func writeFull(conn net.Conn, buf []byte) error {
@@ -77,23 +80,94 @@ func tcpProxyProcess(localconn net.Conn, remoteconn net.Conn) {
 
 // 正向tcp代理启动和处理入口
 func (t *TcpProxy) Start() error {
+	var times int
+
 	listen, err := net.Listen("tcp", t.ListenAddr)
 	if err != nil {
 		return err
 	}
+
 	for {
-		localconn, err := listen.Accept()
+		var localconn net.Conn
+		var remoteconn net.Conn
+
+		localconn, err = listen.Accept()
 		if err != nil {
 			log.Println(err.Error())
 			continue
 		}
-		remoteconn, err := net.Dial("tcp", t.RemoteAddr)
-		if err != nil {
-			log.Println(err.Error())
+
+		if t.ListenTls != nil {
+			localconn = tls.Server(localconn, t.ListenTls)
+		}
+
+		for i := 0; i < len(t.RemoteAddr); i++ {
+			log.Println("proxy connect to ", t.RemoteAddr[times])
+			remoteconn, err = net.Dial("tcp", t.RemoteAddr[times])
+			if err != nil {
+				log.Println(err.Error())
+				times++
+				if times > len(t.RemoteAddr) {
+					times = 0
+				}
+				log.Printf("switch address to %s.\n", t.RemoteAddr[times])
+			} else {
+				break
+			}
+		}
+
+		if remoteconn == nil {
 			localconn.Close()
 			continue
 		}
+
+		if t.RemoteTls != nil {
+			remoteconn = tls.Client(remoteconn, t.RemoteTls)
+		}
+
 		go tcpProxyProcess(localconn, remoteconn)
 	}
+
 	return nil
+}
+
+func TcpProxyStart() {
+
+	listeners := listenerGetAll()
+	if 0 == len(listeners) {
+		log.Fatalln("no listenner.")
+	}
+
+	for _, v := range listeners {
+
+		var localtls *tls.Config
+		var remotetls *tls.Config
+
+		tls := TlsGet(v.Tlsname)
+		if tls != nil {
+			localtls = TlsServerConfig(tls)
+		}
+
+		cluster := ClusterGet(v.Cluster)
+		if cluster == nil {
+			log.Fatalf("not found %s cluster.", v.Cluster)
+		}
+
+		if len(cluster.Endpoint) == 0 {
+			log.Fatalf("not found %s cluster endpoint.", v.Cluster)
+		}
+
+		tls = TlsGet(cluster.TlsName)
+		if tls != nil {
+			remotetls = TlsClientConfig(tls)
+		}
+
+		tcoporxy := NewTcpProxy(v.Address, localtls, cluster.Endpoint, remotetls)
+		err := tcoporxy.Start()
+		if err != nil {
+			log.Fatalf("tcp proxy start failed %v.", v)
+		}
+
+	}
+
 }
