@@ -1,10 +1,8 @@
 package main
 
 import (
-	"io/ioutil"
-	"log"
-
 	"gopkg.in/yaml.v2"
+	"io/ioutil"
 )
 
 type ListernerConfig struct {
@@ -50,9 +48,7 @@ func LoadConfig(filename string) error {
 	if err != nil {
 		return err
 	}
-
-	log.Printf("%v", config)
-
+	
 	globalconfig = config
 	return nil
 }

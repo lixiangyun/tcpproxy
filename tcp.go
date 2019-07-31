@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"sync"
+	"time"
 )
 
 type TcpProxy struct {
@@ -87,6 +88,13 @@ func (t *TcpProxy) Start() error {
 		return err
 	}
 
+	var remoteaddr string
+	for _,v := range t.RemoteAddr {
+		remoteaddr += v + " "
+	}
+
+	log.Printf("listen : %s -> %s", t.ListenAddr,remoteaddr)
+
 	for {
 		var localconn net.Conn
 		var remoteconn net.Conn
@@ -163,10 +171,16 @@ func TcpProxyStart() {
 		}
 
 		tcoporxy := NewTcpProxy(v.Address, localtls, cluster.Endpoint, remotetls)
-		err := tcoporxy.Start()
-		if err != nil {
-			log.Fatalf("tcp proxy start failed %v.", v)
-		}
+
+		go func() {
+			err := tcoporxy.Start()
+			if err != nil {
+				log.Fatalf("tcp proxy start failed %v.", v)
+			}
+		}()
 	}
 
+	for {
+		time.Sleep(time.Second*100)
+	}
 }
