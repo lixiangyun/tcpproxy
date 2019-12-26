@@ -110,18 +110,17 @@ func (t *TcpProxy) Start() error {
 		}
 
 		for i := 0; i < len(t.RemoteAddr); i++ {
-			log.Println("proxy connect to ", t.RemoteAddr[times])
-			remoteconn, err = net.Dial("tcp", t.RemoteAddr[times])
+			remoteaddr := t.RemoteAddr[times]
+			times = (times+1) % len(t.RemoteAddr)
+
+			remoteconn, err = net.Dial("tcp", remoteaddr)
 			if err != nil {
 				log.Println(err.Error())
-				times++
-				if times >= len(t.RemoteAddr) {
-					times = 0
-				}
-				log.Printf("switch address to %s.\n", t.RemoteAddr[times])
-			} else {
-				break
+				continue
 			}
+
+			log.Println("proxy connect to ", remoteaddr)
+			break
 		}
 
 		if remoteconn == nil {

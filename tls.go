@@ -27,10 +27,17 @@ func TlsClientConfig(cfg *TlsConfig) *tls.Config {
 		return nil
 	}
 
-	return &tls.Config{
-		InsecureSkipVerify: true,
-		RootCAs:            pool,
-		Certificates:       []tls.Certificate{cert},
+	if cfg.VerifyCert == true {
+		return &tls.Config{
+			RootCAs:            pool,
+			Certificates:       []tls.Certificate{cert},
+		}
+	}else {
+		return &tls.Config{
+			InsecureSkipVerify: true,
+			RootCAs:            pool,
+			Certificates:       []tls.Certificate{cert},
+		}
 	}
 }
 
@@ -52,9 +59,17 @@ func TlsServerConfig(cfg *TlsConfig) *tls.Config {
 		return nil
 	}
 
-	return &tls.Config{
-		Certificates: []tls.Certificate{cert},
-		ClientAuth:   tls.RequireAndVerifyClientCert,
-		ClientCAs:    pool,
+	if cfg.VerifyCert == true {
+		return &tls.Config{
+			Certificates: []tls.Certificate{cert},
+			ClientAuth:   tls.RequireAndVerifyClientCert,
+			ClientCAs:    pool,
+		}
+	}else {
+		return &tls.Config{
+			Certificates: []tls.Certificate{cert},
+			ClientAuth:   tls.RequestClientCert,
+			ClientCAs:    pool,
+		}
 	}
 }

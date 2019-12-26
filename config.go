@@ -22,6 +22,7 @@ type TlsConfig struct {
 	Cert string `yaml:"cert"`
 	Key  string `yaml:"key"`
 	CA   string `yaml:"ca"`
+	VerifyCert bool `yaml:"verifycert"`
 }
 
 type GlobalConfig struct {
@@ -48,7 +49,7 @@ func LoadConfig(filename string) error {
 	if err != nil {
 		return err
 	}
-	
+
 	globalconfig = config
 	return nil
 }
