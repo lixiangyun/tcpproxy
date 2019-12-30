@@ -7,69 +7,72 @@ import (
 	"log"
 )
 
-func TlsClientConfig(cfg *TlsConfig) *tls.Config {
+func TlsClientConfig(cfg *TlsConfig, addr string) *tls.Config {
+	var pool *x509.CertPool
 
-	//这里读取的是根证书
-	buf, err := ioutil.ReadFile(cfg.CA)
-	if err != nil {
-		log.Println(err.Error())
-		return nil
+	if cfg.CA != "" {
+		buf, err := ioutil.ReadFile(cfg.CA)
+		if err != nil {
+			log.Fatal(err.Error())
+			return nil
+		}
+		pool := x509.NewCertPool()
+		pool.AppendCertsFromPEM(buf)
 	}
 
-	pool := x509.NewCertPool()
-	pool.AppendCertsFromPEM(buf)
-
-	//加载客户端证书
-	//这里加载的是服务端签发的
 	cert, err := tls.LoadX509KeyPair(cfg.Cert, cfg.Key)
 	if err != nil {
-		log.Println(err.Error())
+		log.Fatal(err.Error())
 		return nil
 	}
 
-	if cfg.VerifyCert == true {
-		return &tls.Config{
-			RootCAs:            pool,
-			Certificates:       []tls.Certificate{cert},
-		}
-	}else {
-		return &tls.Config{
-			InsecureSkipVerify: true,
-			RootCAs:            pool,
-			Certificates:       []tls.Certificate{cert},
-		}
+	var bSkipVerify bool
+
+	// 如果没有配置服务端根证书，则忽略校验服务端证书有效性。
+	if pool == nil {
+		bSkipVerify = true
+	}
+
+	return &tls.Config{
+		ServerName:         addr,
+		InsecureSkipVerify: bSkipVerify,
+		RootCAs:            pool,
+		Certificates:       []tls.Certificate{cert},
 	}
 }
 
 func TlsServerConfig(cfg *TlsConfig) *tls.Config {
-	//这里读取的是根证书
-	buf, err := ioutil.ReadFile(cfg.CA)
-	if err != nil {
-		log.Println(err.Error())
-		return nil
-	}
+	var pool *x509.CertPool
 
-	pool := x509.NewCertPool()
-	pool.AppendCertsFromPEM(buf)
+	if cfg.CA != "" {
+		//这里读取的是根证书
+		buf, err := ioutil.ReadFile(cfg.CA)
+		if err != nil {
+			log.Fatal(err.Error())
+			return nil
+		}
+		pool = x509.NewCertPool()
+		pool.AppendCertsFromPEM(buf)
+	}
 
 	//加载服务端证书
-	cert, err := tls.LoadX509KeyPair(cfg.Cert, cfg.Key)
+	crt, err := tls.LoadX509KeyPair(cfg.Cert, cfg.Key)
 	if err != nil {
-		log.Println(err.Error())
+		log.Fatal(err.Error())
 		return nil
 	}
 
-	if cfg.VerifyCert == true {
-		return &tls.Config{
-			Certificates: []tls.Certificate{cert},
-			ClientAuth:   tls.RequireAndVerifyClientCert,
-			ClientCAs:    pool,
-		}
-	}else {
-		return &tls.Config{
-			Certificates: []tls.Certificate{cert},
-			ClientAuth:   tls.RequestClientCert,
-			ClientCAs:    pool,
-		}
+	var authtype tls.ClientAuthType
+
+	if pool != nil {
+		authtype = tls.RequireAndVerifyClientCert
+	} else {
+		authtype = tls.RequireAnyClientCert
+	}
+
+	return &tls.Config{
+		Certificates: []tls.Certificate{crt},
+		ClientAuth:   authtype,
+		ClientCAs:    pool,
 	}
 }

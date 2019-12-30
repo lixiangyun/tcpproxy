@@ -22,7 +22,6 @@ type TlsConfig struct {
 	Cert string `yaml:"cert"`
 	Key  string `yaml:"key"`
 	CA   string `yaml:"ca"`
-	VerifyCert bool `yaml:"verifycert"`
 }
 
 type GlobalConfig struct {

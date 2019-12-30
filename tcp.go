@@ -166,7 +166,7 @@ func TcpProxyStart() {
 
 		tls = TlsGet(cluster.TlsName)
 		if tls != nil {
-			remotetls = TlsClientConfig(tls)
+			remotetls = TlsClientConfig(tls, cluster.Endpoint[0])
 		}
 
 		tcoporxy := NewTcpProxy(v.Address, localtls, cluster.Endpoint, remotetls)
