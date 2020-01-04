@@ -5,14 +5,11 @@ clusters:
   - name: proxy
     endpoints:
     - 127.0.0.1:8001
-    - 127.0.0.1:8002
     tls: client_ssl
 tls:
   - name: client_ssl
-    ca: ./crt/ca.crt
     key: ./crt/client.pem
     cert: ./crt/client.crt
   - name: server_ssl
-    ca: crt/ca.crt
     key: ./crt/server.pem
     cert: ./crt/server.crt

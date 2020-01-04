@@ -3,6 +3,8 @@ package main
 import (
 	"crypto/tls"
 	"fmt"
+
+	//"io"
 	"log"
 	"net"
 	"sync"
@@ -41,10 +43,13 @@ func tcpChannel(prefix string, localconn net.Conn, remoteconn net.Conn, wait *sy
 	defer wait.Done()
 	defer localconn.Close()
 	defer remoteconn.Close()
-	buf := make([]byte, 4096)
+	buf := make([]byte, 65535)
 	for {
 		cnt, err := localconn.Read(buf[0:])
 		if err != nil {
+			if cnt != 0 {
+				writeFull(remoteconn, buf[0:cnt])
+			}
 			break
 		}
 		if debug {
@@ -89,11 +94,11 @@ func (t *TcpProxy) Start() error {
 	}
 
 	var remoteaddr string
-	for _,v := range t.RemoteAddr {
+	for _, v := range t.RemoteAddr {
 		remoteaddr += v + " "
 	}
 
-	log.Printf("listen : %s -> %s", t.ListenAddr,remoteaddr)
+	log.Printf("listen : %s -> %s", t.ListenAddr, remoteaddr)
 
 	for {
 		var localconn net.Conn
@@ -111,7 +116,7 @@ func (t *TcpProxy) Start() error {
 
 		for i := 0; i < len(t.RemoteAddr); i++ {
 			remoteaddr := t.RemoteAddr[times]
-			times = (times+1) % len(t.RemoteAddr)
+			times = (times + 1) % len(t.RemoteAddr)
 
 			remoteconn, err = net.Dial("tcp", remoteaddr)
 			if err != nil {
@@ -180,6 +185,6 @@ func TcpProxyStart() {
 	}
 
 	for {
-		time.Sleep(time.Second*100)
+		time.Sleep(time.Second * 100)
 	}
 }
