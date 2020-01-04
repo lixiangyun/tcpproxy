@@ -67,7 +67,7 @@ func TlsServerConfig(cfg *TlsConfig) *tls.Config {
 	if pool != nil {
 		authtype = tls.RequireAndVerifyClientCert
 	} else {
-		authtype = tls.RequireAnyClientCert
+		authtype = tls.RequestClientCert
 	}
 
 	return &tls.Config{
