@@ -39,7 +39,7 @@ func writeFull(conn net.Conn, buf []byte) error {
 }
 
 // tcp通道互通
-func tcpChannel(prefix string, localconn net.Conn, remoteconn net.Conn, wait *sync.WaitGroup) {
+func tcpChannel(up bool, prefix string, localconn net.Conn, remoteconn net.Conn, wait *sync.WaitGroup) {
 	defer wait.Done()
 	defer localconn.Close()
 	defer remoteconn.Close()
@@ -52,6 +52,12 @@ func tcpChannel(prefix string, localconn net.Conn, remoteconn net.Conn, wait *sy
 			}
 			break
 		}
+		if up {
+			Add(cnt, 0)
+		} else {
+			Add(0, cnt)
+		}
+
 		if debug {
 			log.Printf("%s body:[%v]\r\n", prefix, buf[0:cnt])
 		}
@@ -77,8 +83,8 @@ func tcpProxyProcess(localconn net.Conn, remoteconn net.Conn) {
 
 	syncSem := new(sync.WaitGroup)
 	syncSem.Add(2)
-	go tcpChannel(localremote, localconn, remoteconn, syncSem)
-	go tcpChannel(remotelocal, remoteconn, localconn, syncSem)
+	go tcpChannel(true, localremote, localconn, remoteconn, syncSem)
+	go tcpChannel(false, remotelocal, remoteconn, localconn, syncSem)
 	syncSem.Wait()
 
 	log.Println("close connect. ", localremote)
