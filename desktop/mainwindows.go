@@ -110,10 +110,10 @@ func mainWindowBuilder(mw **walk.MainWindow) *MainWindow {
 					ToolBarInit(),
 				},
 			},
-			//Composite{
-			//	Layout: VBox{MarginsZero: true, Margins: Margins{Right: 10, Bottom: 10}},
-			//	Children: TableWight(),
-			//},
+			Composite{
+				Layout: VBox{MarginsZero: true, Margins: Margins{Right: 10, Bottom: 10}},
+				Children: TableWight(),
+			},
 		},
 	}
 }

@@ -36,7 +36,7 @@ func ToolBarInit() ToolBar {
 			},
 			Action{
 				Text: "Unlink",
-				Image: ICON_TOOL_DEL,
+				Image: ICON_TOOL_UNLINK,
 				OnTriggered: func() {
 
 				},
