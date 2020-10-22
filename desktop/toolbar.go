@@ -17,7 +17,7 @@ func ToolBarInit() ToolBar {
 				Text: "Add Link",
 				Image: ICON_TOOL_ADD,
 				OnTriggered: func() {
-					//AddJobOnce()
+					AddToolBar()
 				},
 			},
 			Action{

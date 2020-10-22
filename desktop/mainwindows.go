@@ -76,9 +76,6 @@ func MainWindowStart() error {
 
 	for  {
 		if mainWindowCtrl.ctrl != nil && mainWindowCtrl.ctrl.Visible() {
-			mainWindowCtrl.ctrl.SetSize(walk.Size{
-				mainWindowWidth,
-				mainWindowHeight})
 			break
 		}
 		time.Sleep(200*time.Millisecond)
@@ -92,11 +89,11 @@ func MainWindowStart() error {
 
 func mainWindowBuilder(mw **walk.MainWindow) *MainWindow {
 	return &MainWindow{
-		Title:   "TcpProxy " + VersionGet(),
+		Title:   "Tcp Proxy " + VersionGet(),
 		Icon: ICON_Main,
 		AssignTo: mw,
-		MinSize: Size{mainWindowWidth, mainWindowHeight-1},
-		Size: Size{mainWindowWidth, mainWindowHeight-1},
+		MinSize: Size{mainWindowWidth, mainWindowHeight},
+		Size: Size{mainWindowWidth, mainWindowHeight},
 		Layout:  VBox{
 			Alignment: AlignHNearVNear,
 			MarginsZero: true,

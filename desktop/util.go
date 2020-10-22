@@ -9,6 +9,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -48,6 +49,45 @@ func GetTimeStampNumber() string {
 
 func SaveToFile(name string, body []byte) error {
 	return ioutil.WriteFile(name, body, 0664)
+}
+
+func InterfaceAddsGet(iface *net.Interface) ([]net.IP, error) {
+	addrs, err := iface.Addrs()
+	if err != nil {
+		return nil, nil
+	}
+	ips := make([]net.IP, 0)
+	for _, v:= range addrs {
+		ipone, _, err:= net.ParseCIDR(v.String())
+		if err != nil {
+			continue
+		}
+		if len(ipone) > 0 {
+			ips = append(ips, ipone)
+		}
+	}
+	return ips, nil
+}
+
+func IsIPv4(ip net.IP) bool {
+	return strings.Index(ip.String(), ".") != -1
+}
+
+func InterfaceLocalIP(inface *net.Interface) ([]net.IP, error) {
+	addrs, err := InterfaceAddsGet(inface)
+	if err != nil {
+		return nil, err
+	}
+	var output []net.IP
+	for _, v := range addrs {
+		if IsIPv4(v) == true {
+			output = append(output, v)
+		}
+	}
+	if len(output) == 0 {
+		return nil, fmt.Errorf("interface not ipv4 address.")
+	}
+	return output, nil
 }
 
 func GetToken(length int) string {
