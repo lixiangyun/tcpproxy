@@ -28,6 +28,11 @@ func main()  {
 		logs.Error(err.Error())
 		return
 	}
+	err = LinkInit()
+	if err != nil {
+		logs.Error(err.Error())
+		return
+	}
 	err = MainWindowStart()
 	if err != nil {
 		logs.Error(err.Error())

@@ -7,6 +7,36 @@ import (
 
 var toolBars *walk.ToolBar
 
+func LinkDelToolBar()  {
+	list := consoleLinkTable.LinkTableSelectList()
+	if len(list) == 0 {
+		ErrorBoxAction(MainWindowsCtrl(), "No object selected")
+		return
+	}
+	LinkDelele(list)
+	consoleLinkTable.LinkTableSelectClean()
+}
+
+func LinkStartToolBar()  {
+	list := consoleLinkTable.LinkTableSelectList()
+	if len(list) == 0 {
+		ErrorBoxAction(MainWindowsCtrl(), "No object selected")
+		return
+	}
+	LinkStart(list)
+	consoleLinkTable.LinkTableSelectClean()
+}
+
+func LinkStopToolBar()  {
+	list := consoleLinkTable.LinkTableSelectList()
+	if len(list) == 0 {
+		ErrorBoxAction(MainWindowsCtrl(), "No object selected")
+		return
+	}
+	LinkStop(list)
+	consoleLinkTable.LinkTableSelectClean()
+}
+
 func ToolBarInit() ToolBar {
 	return ToolBar{
 		AssignTo: &toolBars,
@@ -24,21 +54,21 @@ func ToolBarInit() ToolBar {
 				Text: "Delete Link",
 				Image: ICON_TOOL_DEL,
 				OnTriggered: func() {
-					//AddJobBatch()
+					go LinkDelToolBar()
 				},
 			},
 			Action{
 				Text: "Link",
 				Image: ICON_TOOL_LINK,
 				OnTriggered: func() {
-					//KeepSet()
+					go LinkStartToolBar()
 				},
 			},
 			Action{
 				Text: "Unlink",
 				Image: ICON_TOOL_UNLINK,
 				OnTriggered: func() {
-
+					go LinkStopToolBar()
 				},
 			},
 			Action{

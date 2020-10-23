@@ -10,7 +10,6 @@ import (
 
 type LinkItem struct {
 	Index        int
-	Title        string
 	Bind         string
 	Mode         string
 	Count        int
@@ -42,21 +41,19 @@ func (n *LinkModel)Value(row, col int) interface{} {
 	case 0:
 		return item.Index
 	case 1:
-		return item.Title
-	case 2:
 		return item.Bind
-	case 3:
+	case 2:
 		return item.Mode
-	case 4:
+	case 3:
 		return fmt.Sprintf("%d", item.Count)
-	case 5:
+	case 4:
 		if item.Speed == 0 {
 			return "-"
 		}
 		return fmt.Sprintf("%s/s", ByteViewLite(item.Speed))
-	case 6:
+	case 5:
 		return ByteView(item.Size)
-	case 7:
+	case 6:
 		return item.Status
 	}
 	panic("unexpected col")
@@ -85,18 +82,16 @@ func (m *LinkModel) Sort(col int, order walk.SortOrder) error {
 		case 0:
 			return c(a.Index < b.Index)
 		case 1:
-			return c(a.Title < b.Title)
-		case 2:
 			return c(a.Bind < b.Bind)
-		case 3:
+		case 2:
 			return c(a.Mode < b.Mode)
-		case 4:
+		case 3:
 			return c(a.Count < b.Count)
-		case 5:
+		case 4:
 			return c(a.Speed < b.Speed)
-		case 6:
+		case 5:
 			return c(a.Size < b.Size)
-		case 7:
+		case 6:
 			return c(a.Status < b.Status)
 		}
 		panic("unreachable")
@@ -121,90 +116,92 @@ func StatusToIcon(status string) walk.Image {
 	return nil
 }
 
-var jobTable *LinkModel
+var consoleLinkTable *LinkModel
 
 func init()  {
-	jobTable = new(LinkModel)
-	jobTable.items = make([]*LinkItem, 0)
+	consoleLinkTable = new(LinkModel)
+	consoleLinkTable.items = make([]*LinkItem, 0)
 }
 
-func JobTalbeUpdate(item []*LinkItem )  {
-	jobTable.Lock()
-	defer jobTable.Unlock()
+func LinkTalbeUpdate(item []*LinkItem )  {
+	lt := consoleLinkTable
 
-	oldItem := jobTable.items
+	lt.Lock()
+	defer lt.Unlock()
+
+	oldItem := lt.items
 	if len(oldItem) == len(item) {
 		for i, v := range item {
 			v.checked = oldItem[i].checked
 		}
 	}
 
-	jobTable.items = item
-	jobTable.PublishRowsReset()
-	jobTable.Sort(jobTable.sortColumn, jobTable.sortOrder)
+	lt.items = item
+	lt.PublishRowsReset()
+	lt.Sort(lt.sortColumn, lt.sortOrder)
 }
 
-func JobTableSelectClean()  {
-	jobTable.Lock()
-	defer jobTable.Unlock()
+func (lk *LinkModel)LinkTableSelectClean()  {
+	lk.Lock()
+	defer lk.Unlock()
 
-	for _, v := range jobTable.items {
+	for _, v := range lk.items {
 		v.checked = false
 	}
 
-	jobTable.PublishRowsReset()
-	jobTable.Sort(jobTable.sortColumn, jobTable.sortOrder)
+	lk.PublishRowsReset()
+	lk.Sort(lk.sortColumn, lk.sortOrder)
 }
 
-func JobTableSelectAll()  {
-	jobTable.Lock()
-	defer jobTable.Unlock()
+func (lk *LinkModel)LinkTableSelectAll()  {
+	lk.Lock()
+	defer lk.Unlock()
 
 	done := true
-	for _, v := range jobTable.items {
+	for _, v := range lk.items {
 		if !v.checked {
 			done = false
 		}
 	}
 
-	for _, v := range jobTable.items {
+	for _, v := range lk.items {
 		v.checked = !done
 	}
 
-	jobTable.PublishRowsReset()
-	jobTable.Sort(jobTable.sortColumn, jobTable.sortOrder)
+	lk.PublishRowsReset()
+	lk.Sort(lk.sortColumn, lk.sortOrder)
 }
 
-func JobTableSelectList() []string {
-	jobTable.RLock()
-	defer jobTable.RUnlock()
+func (lt *LinkModel)LinkTableSelectList() []string {
+	lt.RLock()
+	defer lt.RUnlock()
 
 	var output []string
-	for _, v := range jobTable.items {
+	for _, v := range lt.items {
 		if v.checked {
-			output = append(output, v.Title)
+			output = append(output, v.Bind)
 		}
 	}
 
 	return output
 }
 
-func JobTableSelectStatus(status string)  {
-	jobTable.Lock()
-	defer jobTable.Unlock()
+func (lt *LinkModel)LinkTableSelectStatus(status string)  {
+	lt.Lock()
+	defer lt.Unlock()
 
-	for _, v := range jobTable.items {
+	for _, v := range lt.items {
 		v.checked = false
 	}
 
-	for _, v := range jobTable.items {
+	for _, v := range lt.items {
 		if v.Status == status {
 			v.checked = true
 		}
 	}
 
-	jobTable.PublishRowsReset()
-	jobTable.Sort(jobTable.sortColumn, jobTable.sortOrder)
+	lt.PublishRowsReset()
+	lt.Sort(lt.sortColumn, lt.sortOrder)
 }
 
 var tableView *walk.TableView
@@ -224,7 +221,6 @@ func TableWight() []Widget {
 			},
 			Columns: []TableViewColumn{
 				{Title: "#", Width: 30},
-				{Title: "Title", Width: 100},
 				{Title: "Bind", Width: 120},
 				{Title: "Mode", Width: 80},
 				{Title: "Connects", Width: 60},
@@ -233,18 +229,18 @@ func TableWight() []Widget {
 				{Title: "Status", Width: 80},
 			},
 			StyleCell: func(style *walk.CellStyle) {
-				item := jobTable.items[style.Row()]
+				item := consoleLinkTable.items[style.Row()]
 				if style.Row()%2 == 0 {
 					style.BackgroundColor = walk.RGB(248, 248, 255)
 				} else {
 					style.BackgroundColor = walk.RGB(220, 220, 220)
 				}
 				switch style.Col() {
-				case 7:
+				case 6:
 					style.Image = StatusToIcon(item.Status)
 				}
 			},
-			Model:jobTable,
+			Model:consoleLinkTable,
 		},
 		Composite{
 			Layout: HBox{MarginsZero: true},
@@ -253,7 +249,7 @@ func TableWight() []Widget {
 					Text: "All",
 					OnClicked: func() {
 						go func() {
-							JobTableSelectAll()
+							consoleLinkTable.LinkTableSelectAll()
 						}()
 					},
 				},
@@ -261,7 +257,7 @@ func TableWight() []Widget {
 					Text: "Linked",
 					OnClicked: func() {
 						go func() {
-							JobTableSelectStatus(STATUS_LINK)
+							consoleLinkTable.LinkTableSelectStatus(STATUS_LINK)
 						}()
 					},
 				},
@@ -269,7 +265,7 @@ func TableWight() []Widget {
 					Text: "Unlinked",
 					OnClicked: func() {
 						go func() {
-							JobTableSelectStatus(STATUS_UNLINK)
+							consoleLinkTable.LinkTableSelectStatus(STATUS_UNLINK)
 						}()
 					},
 				},

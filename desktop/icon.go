@@ -86,7 +86,7 @@ var ICON_Tool_Size = walk.Size{
 }
 
 var ICON_Min_Size = walk.Size{
-	Width: 16, Height: 16,
+	Width: 24, Height: 24,
 }
 
 func IconInit() error {

@@ -9,6 +9,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -26,6 +27,16 @@ func IsConnect(address string, timeout int) bool {
 		return false
 	}
 	conn.Close()
+	return true
+}
+
+func ListenCheck(addr string, port int) bool {
+	list, err := net.Listen("tcp", fmt.Sprintf("%s:%d", addr, port))
+	if err != nil {
+		logs.Error(err.Error())
+		return false
+	}
+	defer list.Close()
 	return true
 }
 
@@ -67,6 +78,32 @@ func InterfaceAddsGet(iface *net.Interface) ([]net.IP, error) {
 		}
 	}
 	return ips, nil
+}
+
+func AddressValid(addr string) bool {
+	if addr == "" {
+		return false
+	}
+	list := strings.Split(addr,":")
+	if len(list) != 2 {
+		logs.Error("address valid fail, %s", addr)
+		return false
+	}
+	ip := net.ParseIP(list[0])
+	if ip == nil {
+		logs.Error("address valid fail, %s", addr)
+		return false
+	}
+	cnt, err := strconv.Atoi(list[1])
+	if err != nil {
+		logs.Error("address valid fail, %s", err.Error())
+		return false
+	}
+	if cnt > 65535 || cnt < 0 {
+		logs.Error("address valid fail, %s", addr)
+		return false
+	}
+	return true
 }
 
 func IsIPv4(ip net.IP) bool {
