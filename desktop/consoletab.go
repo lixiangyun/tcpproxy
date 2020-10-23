@@ -123,20 +123,25 @@ func init()  {
 	consoleLinkTable.items = make([]*LinkItem, 0)
 }
 
-func LinkTalbeUpdate(item []*LinkItem )  {
+func LinkTalbeUpdate(items []*LinkItem )  {
 	lt := consoleLinkTable
+	idx := tableView.CurrentIndex()
 
 	lt.Lock()
 	defer lt.Unlock()
 
 	oldItem := lt.items
-	if len(oldItem) == len(item) {
-		for i, v := range item {
+	if len(oldItem) == len(items) {
+		for i, v := range items {
 			v.checked = oldItem[i].checked
 		}
 	}
 
-	lt.items = item
+	if idx < len(items) {
+		tableView.SetCurrentIndex(idx)
+	}
+
+	lt.items = items
 	lt.PublishRowsReset()
 	lt.Sort(lt.sortColumn, lt.sortOrder)
 }
@@ -204,6 +209,22 @@ func (lt *LinkModel)LinkTableSelectStatus(status string)  {
 	lt.Sort(lt.sortColumn, lt.sortOrder)
 }
 
+func DetailItem()  {
+	var bind string
+
+	consoleLinkTable.RLock()
+	idx := tableView.CurrentIndex()
+	if idx < len(consoleLinkTable.items) {
+		bind = consoleLinkTable.items[idx].Bind
+	}
+	consoleLinkTable.RUnlock()
+
+	cfg := LinkFind(bind)
+	if cfg != nil {
+		ShowToolBar(cfg)
+	}
+}
+
 var tableView *walk.TableView
 
 func TableWight() []Widget {
@@ -216,8 +237,11 @@ func TableWight() []Widget {
 			AlternatingRowBG: true,
 			ColumnsOrderable: true,
 			CheckBoxes: true,
+			OnMouseUp: func(x, y int, button walk.MouseButton) {
+
+			},
 			OnItemActivated: func() {
-				InfoBoxAction(MainWindowsCtrl(),"")
+				go DetailItem()
 			},
 			Columns: []TableViewColumn{
 				{Title: "#", Width: 30},

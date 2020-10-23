@@ -74,6 +74,21 @@ type BackendModel struct {
 	items      []*BackendItem
 }
 
+func (n *BackendModel) Input(cfg []BackendConfig)  {
+	n.RLock()
+	defer n.RUnlock()
+
+	var items []*BackendItem
+	for i, v := range cfg {
+		items = append(items, &BackendItem{
+			Index: i, Address: v.Address,
+			Timeout: v.Timeout, Weight: v.Weight,
+			Standby: v.Standby,
+		})
+	}
+	n.items = items
+}
+
 func (n *BackendModel) Output() []BackendConfig {
 	n.RLock()
 	defer n.RUnlock()

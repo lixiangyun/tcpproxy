@@ -75,6 +75,19 @@ func LinkStart(binds []string)  {
 	}
 }
 
+func LinkFind(bind string) *LinkConfig {
+	linkCtrl.RLock()
+	defer linkCtrl.RUnlock()
+
+	for _, v := range linkCtrl.Cache {
+		if v.Bind != bind {
+			continue
+		}
+		return v.Cfg
+	}
+	return nil
+}
+
 func LinkStop(binds []string)  {
 	linkCtrl.Lock()
 	defer linkCtrl.Unlock()
@@ -146,9 +159,8 @@ func AddLinkItemToConsole(link *Link, idx int) *LinkItem {
 }
 
 func consoleUpdate()  {
+	time.Sleep(time.Second)
 	for  {
-		time.Sleep(2 * time.Second)
-
 		linkCtrl.RLock()
 		var output []*LinkItem
 		for idx, v := range linkCtrl.Cache {
@@ -156,6 +168,7 @@ func consoleUpdate()  {
 		}
 		LinkTalbeUpdate(output)
 		linkCtrl.RUnlock()
+		time.Sleep(2 * time.Second)
 	}
 }
 
