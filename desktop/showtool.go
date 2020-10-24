@@ -86,7 +86,7 @@ func ShowToolBar(cfg * LinkConfig)  {
 						AssignTo: &acceptPB,
 						Text: "OK",
 						OnClicked: func() {
-							dlg.Accept()
+							dlg.Cancel()
 						},
 					},
 				},

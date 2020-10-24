@@ -71,13 +71,13 @@ func ToolBarInit() ToolBar {
 					go LinkStopToolBar()
 				},
 			},
-			Action{
-				Text: "Setting",
-				Image: ICON_TOOL_SETTING,
-				OnTriggered: func() {
-					//Setting()
-				},
-			},
+			//Action{
+			//	Text: "Setting",
+			//	Image: ICON_TOOL_SETTING,
+			//	OnTriggered: func() {
+			//		//Setting()
+			//	},
+			//},
 		},
 	}
 }

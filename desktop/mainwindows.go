@@ -9,7 +9,7 @@ import (
 )
 
 
-var mainWindowWidth = 600
+var mainWindowWidth = 500
 var mainWindowHeight = 400
 
 type MainWindowCtrl struct {

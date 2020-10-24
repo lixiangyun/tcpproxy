@@ -153,7 +153,6 @@ func AddLinkItemToConsole(link *Link, idx int) *LinkItem {
 		Mode: link.Cfg.Mode,
 		Count: count,
 		Speed: speed/2,
-		Size: total,
 		Status: status,
 	}
 }

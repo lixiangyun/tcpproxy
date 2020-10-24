@@ -89,7 +89,7 @@ func (l *LinkInstance)proxy(wg *sync.WaitGroup, conn1 net.Conn)  {
 	wg2 := new(sync.WaitGroup)
 	wg2.Add(2)
 	go connect(wg2, conn1, conn2, &channel.sendflow)
-	go connect(wg2, conn1, conn2, &channel.resvflow)
+	go connect(wg2, conn2, conn1, &channel.resvflow)
 	wg2.Wait()
 
 	l.Lock()

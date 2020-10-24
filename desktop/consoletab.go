@@ -14,7 +14,6 @@ type LinkItem struct {
 	Mode         string
 	Count        int
 	Speed        int64
-	Size         int64
 	Status       string
 
 	checked      bool
@@ -45,15 +44,16 @@ func (n *LinkModel)Value(row, col int) interface{} {
 	case 2:
 		return item.Mode
 	case 3:
+		if item.Count == 0 {
+			return "-"
+		}
 		return fmt.Sprintf("%d", item.Count)
 	case 4:
 		if item.Speed == 0 {
 			return "-"
 		}
-		return fmt.Sprintf("%s/s", ByteViewLite(item.Speed))
+		return fmt.Sprintf("%s/s", ByteView(item.Speed))
 	case 5:
-		return ByteView(item.Size)
-	case 6:
 		return item.Status
 	}
 	panic("unexpected col")
@@ -90,8 +90,6 @@ func (m *LinkModel) Sort(col int, order walk.SortOrder) error {
 		case 4:
 			return c(a.Speed < b.Speed)
 		case 5:
-			return c(a.Size < b.Size)
-		case 6:
 			return c(a.Status < b.Status)
 		}
 		panic("unreachable")
@@ -237,19 +235,15 @@ func TableWight() []Widget {
 			AlternatingRowBG: true,
 			ColumnsOrderable: true,
 			CheckBoxes: true,
-			OnMouseUp: func(x, y int, button walk.MouseButton) {
-
-			},
 			OnItemActivated: func() {
-				go DetailItem()
+				DetailItem()
 			},
 			Columns: []TableViewColumn{
 				{Title: "#", Width: 30},
 				{Title: "Bind", Width: 120},
 				{Title: "Mode", Width: 80},
 				{Title: "Connects", Width: 60},
-				{Title: "Traffic", Width: 80},
-				{Title: "Stat", Width: 60},
+				{Title: "Traffic", Width: 60},
 				{Title: "Status", Width: 80},
 			},
 			StyleCell: func(style *walk.CellStyle) {
@@ -260,7 +254,7 @@ func TableWight() []Widget {
 					style.BackgroundColor = walk.RGB(220, 220, 220)
 				}
 				switch style.Col() {
-				case 6:
+				case 5:
 					style.Image = StatusToIcon(item.Status)
 				}
 			},

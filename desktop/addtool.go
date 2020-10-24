@@ -96,7 +96,10 @@ func (n *BackendModel) Output() []BackendConfig {
 	var output []BackendConfig
 	for _, v := range n.items {
 		output = append(output, BackendConfig{
-			Address: v.Address, Weight: v.Weight, Standby: v.Standby,
+			Address: v.Address,
+			Timeout: v.Timeout,
+			Weight: v.Weight,
+			Standby: v.Standby,
 		})
 	}
 	return output
@@ -296,7 +299,6 @@ func AddToolBar()  {
 					},
 					LineEdit{
 						AssignTo: &BackendAddr,
-						ToolTipText: "192.168.1.100:8080",
 						CueBanner: "192.168.1.100:8080",
 						Text: "",
 						OnEditingFinished: func() {

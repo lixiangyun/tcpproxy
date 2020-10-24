@@ -7,7 +7,7 @@ import (
 func MenuBarInit() []MenuItem {
 	return []MenuItem{
 		Action{
-			Text: "Debug",
+			Text: "Runlog",
 			OnTriggered: func() {
 				OpenBrowserWeb(LogDirGet())
 			},
